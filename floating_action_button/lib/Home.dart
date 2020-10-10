@@ -21,7 +21,7 @@ class _HomeState extends State<Home> {
         /*child: Icon(Icons.add),*/
         elevation: 6,
         icon: Icon(Icons.add_shopping_cart),
-        label: Text("Adicionar"),
+        label: Text(""),
         /*shape: BeveledRectangleBorder(
           borderRadius: BorderRadius.circular(20)
         ),*/
