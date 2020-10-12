@@ -13,6 +13,8 @@ class _HomeState extends State<Home> {
   double _height = 50;
   double _width = 50;
 
+  // width: 150,
+  //height: 100,
 
   @override
   Widget build(BuildContext context) {
@@ -25,46 +27,49 @@ class _HomeState extends State<Home> {
       //Biblioteca(),
     ];
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: Image.asset(
-          "imagens/abaconew.png",
-          width: 150,
-          height: 100,
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          title: Image.asset(
+            "imagens/abaconew.png",
+            width: 150,
+            height: 100,
           ),
-        iconTheme: IconThemeData(color: Colors.blue),
-        actions: [
-          IconButton(
-              icon: Icon(Icons.account_circle),
-              onPressed: () {
-                print("Minha Conta");
-              })
-        ],
+          iconTheme: IconThemeData(color: Colors.blue),
+          actions: [
+            IconButton(
+                icon: Icon(Icons.account_circle),
+                onPressed: () {
+                  print("Minha Conta");
+                })
+          ],
+        ),
+        body: Container(
+          padding: EdgeInsets.all(5),
+          child: telas[_indiceAtual],
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+            currentIndex: _indiceAtual,
+            onTap: (indice) {
+              setState(() {
+                _indiceAtual = indice;
+              });
+            },
+            type: BottomNavigationBarType.fixed,
+            //fixedColor: Colors.red,
+            items: [
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.home), title: Text("Início")),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.list), title: Text("Adiantamentos")),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.attach_money), title: Text("Prest. Conta")),
+              // BottomNavigationBarItem(
+              // icon: Icon(Icons.folder), title: Text("Biblioteca"))
+            ]),
       ),
-      body: Container(
-        padding: EdgeInsets.all(5),
-        child: telas[_indiceAtual],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _indiceAtual,
-          onTap: (indice) {
-            setState(() {
-              _indiceAtual = indice;
-            });
-          },
-          type: BottomNavigationBarType.fixed,
-          //fixedColor: Colors.red,
-          items: [
-            BottomNavigationBarItem(
-                icon: Icon(Icons.home), title: Text("Início")),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.list), title: Text("Adiantamentos")),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.attach_money), title: Text("Prest. Conta")),
-            // BottomNavigationBarItem(
-            // icon: Icon(Icons.folder), title: Text("Biblioteca"))
-          ]),
     );
   }
 }
