@@ -1,45 +1,109 @@
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:convert';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  FirebaseAuth auth = FirebaseAuth.instance;
-
-  String email = "eduardo.tsilva@hotmail.com";
-  String senha = "123456";
-  String senhaErrada = '123';
-
-
-  //Processo de SingIn (LogIn)
-  auth.signInWithEmailAndPassword(
-      email: email,
-      password: senha
-  ).then((value) => {
-      print("usuário logou email: " + value.email)
-  }).catchError((onError){
-      print("usuário erro: " + onError.toString());
-  });
-
-
-  runApp(App());
+  runApp(MaterialApp(
+    home: Home(),
+  ));
 }
 
-class App extends StatelessWidget {
+class Home extends StatefulWidget {
+  @override
+  _HomeState createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
+  File _imagem;
+  Image _imagem2;
+  final picker = ImagePicker();
+
+  Future _recuperarImagem(bool daCamera) async {
+    PickedFile pickedFile;
+    String img64;
+
+    if (daCamera) {
+      pickedFile = await picker.getImage(source: ImageSource.camera);
+    } else {
+      pickedFile = await picker.getImage(source: ImageSource.gallery);
+    }
+
+    //*********************************
+    //Encode base 64
+    final bytes = File(pickedFile.path).readAsBytesSync();
+    img64 = base64Encode(bytes);
+    //Encode base 64 - fim
+    //*********************************
+
+    //decode base 64
+    final decodedBytes = base64Decode(img64);
+    _imagem2 = Image.memory(decodedBytes);
+
+//    Firestore.instance
+//        .collection("imagem64")
+//        .document("002")
+//        .setData({"decodedBytes": decodedBytes.toString()});
+
+//      _imagem2 = File("imagem.jpg");
+//      _imagem2.writeAsBytesSync(decodedBytes);
+
+    //decode base 64 fim
+    Firestore.instance
+        .collection("imagem64")
+        .document("001")
+        .setData({"imagem64": img64});
+
+    setState(() {
+      if (pickedFile != null) {
+        _imagem =
+            File(pickedFile.path); //forma original de pegar direto da camera
+      } else {
+        print(' #################### No image selected.');
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Selecionar Imagem"),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            RaisedButton(
+              onPressed: () {
+                _recuperarImagem(true);
+              },
+              child: Text("Abrir Câmera"),
+            ),
+            RaisedButton(
+              onPressed: () {
+                _recuperarImagem(false);
+              },
+              child: Text("Abrir Galeria"),
+            ),
+            _imagem == null
+                ? Text("Sem imagem selecionada")
+                : Image.file(_imagem,width: 200,height: 200,),
+            _imagem2 == null ? Text("SEM IMAGEM 2") : _imagem2
+          ],
+        ),
+      ),
+    );
   }
 }
 
-
-
-
-
 //***** COLINHA KKK
 
-
+//WidgetsFlutterBinding.ensureInitialized();
 
 //Firestore.instance
 //    .collection("usuarios")
@@ -66,14 +130,12 @@ class App extends StatelessWidget {
 //  DocumentSnapshot snapshot = await db.collection("usuarios").document("001").get();
 //  print("dados : " + snapshot.data.toString());
 
-
 //retornando todos os dados da collection "usuarios"
 //   QuerySnapshot querySnapshot = await db.collection("usuarios").getDocuments();
 //   for(DocumentSnapshot item in querySnapshot.documents){
 //     var dados = item.data;
 //     print("Toda coleçãode usuario ->  Nome: " + item["nome"] + '  todos os dados -> ' + dados.toString());
 //   }
-
 
 //buscar lista de dados sempre que houver mudança no banco de dados
 //usamos o Listen (adiciona um ouvinte, o fire base notifica)
@@ -88,8 +150,6 @@ class App extends StatelessWidget {
 //    }
 //  });
 
-
-
 //CRIACAO DE USUÁRIO
 //  auth.createUserWithEmailAndPassword(email: email, password: senha)
 //      .then((fireBaseUser) => {
@@ -97,7 +157,6 @@ class App extends StatelessWidget {
 //      }).catchError((erro){
 //        print("novo usuário erro: " + erro.toString());
 //  });
-
 
 //VERIFICAR SE O USUÁRIO ESTÁ LOGADO
 //FirebaseUser usuarioAtual = await auth.currentUser();
@@ -111,7 +170,6 @@ class App extends StatelessWidget {
 
 //DESLOGAR USUARIO
 //auth.singOut();
-
 
 //Processo de SingIn (LogIn)
 //auth.signInWithEmailAndPassword(
