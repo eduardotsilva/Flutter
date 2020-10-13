@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
+import 'package:firebase_storage/firebase_storage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +23,9 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   File _imagem;
   Image _imagem2;
+  String _statusUpload = "Upload não iniciado...";
+  String _urlImagemRecuperada = null;
+
   final picker = ImagePicker();
 
   Future _recuperarImagem(bool daCamera) async {
@@ -43,7 +47,7 @@ class _HomeState extends State<Home> {
 
     //decode base 64
     final decodedBytes = base64Decode(img64);
-    _imagem2 = Image.memory(decodedBytes);
+    _imagem2 = Image.memory(decodedBytes, height: 200, width: 200);
 
 //    Firestore.instance
 //        .collection("imagem64")
@@ -69,6 +73,40 @@ class _HomeState extends State<Home> {
     });
   }
 
+  Future _uploadImagem() async {
+    FirebaseStorage storage = FirebaseStorage.instance;
+
+    StorageReference pastaRaiz = storage.ref();
+    StorageReference arquivo = pastaRaiz.child("fotos").child("gtr.jpg");
+
+    StorageUploadTask task = arquivo.putFile(_imagem);
+
+    task.events.listen((event) {
+      if (event.type == StorageTaskEventType.progress) {
+        setState(() {
+          this._statusUpload = "Upload em progresso...";
+        });
+      } else if (event.type == StorageTaskEventType.success) {
+        setState(() {
+          this._statusUpload = "Upload realizado com sucesso!";
+        });
+      }
+      ;
+    });
+
+    task.onComplete.then((StorageTaskSnapshot snapshot) {
+      _recuperarUrlImagem(snapshot);
+    });
+  }
+
+  Future _recuperarUrlImagem(StorageTaskSnapshot snapshot) async {
+    String url = await snapshot.ref.getDownloadURL();
+    print("URL STORAGE FIRE BASE : " + url);
+    setState(() {
+      _urlImagemRecuperada = url;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -78,6 +116,7 @@ class _HomeState extends State<Home> {
       body: SingleChildScrollView(
         child: Column(
           children: [
+            Text(_statusUpload),
             RaisedButton(
               onPressed: () {
                 _recuperarImagem(true);
@@ -92,8 +131,21 @@ class _HomeState extends State<Home> {
             ),
             _imagem == null
                 ? Text("Sem imagem selecionada")
-                : Image.file(_imagem,width: 200,height: 200,),
-            _imagem2 == null ? Text("SEM IMAGEM 2") : _imagem2
+                : Image.file(
+                    _imagem,
+                    width: 200,
+                    height: 200,
+                  ),
+            _imagem2 == null ? Text("SEM IMAGEM 2") : _imagem2,
+            RaisedButton(
+              onPressed: () {
+                _uploadImagem();
+              },
+              child: Text("Upload Imagem"),
+            ),
+            _urlImagemRecuperada == null
+                ? Container()
+                : Image.network(_urlImagemRecuperada)
           ],
         ),
       ),
