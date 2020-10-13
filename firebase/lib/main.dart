@@ -137,12 +137,14 @@ class _HomeState extends State<Home> {
                     height: 200,
                   ),
             _imagem2 == null ? Text("SEM IMAGEM 2") : _imagem2,
-            RaisedButton(
-              onPressed: () {
-                _uploadImagem();
-              },
-              child: Text("Upload Imagem"),
-            ),
+            _imagem == null
+                ? Container()
+                : RaisedButton(
+                    onPressed: () {
+                      _uploadImagem();
+                    },
+                    child: Text("Upload Imagem"),
+                  ),
             _urlImagemRecuperada == null
                 ? Container()
                 : Image.network(_urlImagemRecuperada)
